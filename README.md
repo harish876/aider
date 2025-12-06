@@ -178,3 +178,10 @@ See the [installation instructions](https://aider.chat/docs/install.html) and [u
 - *"Aider ... is the tool to benchmark against."* — [BeetleB on Hacker News](https://news.ycombinator.com/item?id=43930201)
 - *"aider is really cool"* — [kache on X](https://x.com/yacineMTB/status/1911224442430124387)
 
+### Running Bench
+```
+./benchmark/benchmark.py aider-trial --model openrouter/openai/o1 --tries 4 --threads 12 --languages python --edit-format diff --verbose --exercises-dir polyglot-benchmark --num-tests 5 --new
+
+
+./benchmark/benchmark.py --stats tmp.benchmarks/YYYY-MM-DD-HH-MM-SS--a-helpful-name-for-this-run
+```

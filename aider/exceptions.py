@@ -47,6 +47,9 @@ EXCEPTIONS = [
         True,
         "The API provider timed out without returning a response. They may be down or overloaded.",
     ),
+    ExInfo("BadGatewayError", False, None),
+    ExInfo("ErrorEventError", False, None),
+    ExInfo("ImageFetchError", False, "Error fetching or processing images"),
 ]
 
 
@@ -60,17 +63,25 @@ class LiteLLMExceptions:
     def _load(self, strict=False):
         import litellm
 
-        for var in dir(litellm):
-            if var.endswith("Error"):
-                if var not in self.exception_info:
-                    raise ValueError(f"{var} is in litellm but not in aider's exceptions list")
-
+        # Only load exceptions that aider explicitly knows about.
+        # Don't fail if litellm has exceptions that aider hasn't seen yet.
         for var in self.exception_info:
-            ex = getattr(litellm, var)
-            self.exceptions[ex] = self.exception_info[var]
+            if hasattr(litellm, var):
+                try:
+                    ex = getattr(litellm, var)
+                    # Only add if it's actually an exception class
+                    if isinstance(ex, type) and issubclass(ex, BaseException):
+                        self.exceptions[ex] = self.exception_info[var]
+                except (TypeError, AttributeError):
+                    # Skip if we can't get the exception or it's not a valid exception class
+                    pass
 
     def exceptions_tuple(self):
-        return tuple(self.exceptions)
+        # Filter to only include actual exception classes that inherit from BaseException
+        return tuple(
+            ex for ex in self.exceptions.keys()
+            if isinstance(ex, type) and issubclass(ex, BaseException)
+        )
 
     def get_ex_info(self, ex):
         """Return the ExInfo for a given exception instance"""
